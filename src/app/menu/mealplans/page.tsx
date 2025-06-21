@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
 import {
     Form,
     FormField,
@@ -24,8 +23,18 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axiosClient from "@/lib/axios";
+import { useState, useEffect, useRef } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useSession } from "next-auth/react"; // Import useSession
+import { useRouter } from "next/navigation";
 
-type ReviewForm ={
+type ReviewForm = {
+    message: string;
+    rating: number;
+}
+
+type Testimonial = {
     name: string;
     message: string;
     rating: number;
@@ -44,7 +53,6 @@ const mealPlans = [
         id: 2,
         name: "Garden Fresh Healthy",
         price: "IDR 320,000",
-
         description: "Nutritionally balanced meals with fresh garden vegetables",
         image: "🥗",
     },
@@ -52,7 +60,6 @@ const mealPlans = [
         id: 3,
         name: "Family Feast Delight",
         price: "IDR 680,000",
-
         description: "Perfect for family gatherings with colorful variety",
         image: "👨‍👩‍👧‍👦",
     },
@@ -66,26 +73,85 @@ const mealPlans = [
 ];
 
 const validateSchema = z.object({
-    name: z.string().min(1, "Name is required"),
     message: z.string().min(1, "Message is required"),
-    rating: z.number()
+    rating: z.coerce.number().min(1).max(5)
 });
 
 export default function MealPlansPage() {
+    const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+    console.log("Initial testimonials state:", testimonials);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+    const carouselRef = useRef<HTMLDivElement>(null);
+    const router = useRouter();
 
-    const form = useForm({
+
+    const { data: session, status } = useSession();
+    const isAuthenticated = status === "authenticated";
+    const userId = session?.user?.id;
+    useEffect(() => {
+        const fetchTestimonials = async () => {
+            try {
+                const response = await axiosClient.get("/testimonial");
+                if (!Array.isArray(response.data.data)) {
+                    console.warn("Expected an array but got:", response.data.data);
+                    return;
+                }
+
+                if (response.data.length === 0) {
+                    console.info("No testimonials found.");
+                    return;
+                }
+
+                setTestimonials(response.data.data);
+            } catch (error) {
+                console.log("Error fetching testimonials:", error);
+                alert("Failed to load testimonials. Please try again later.");
+            }
+        };
+        fetchTestimonials();
+    }, []);
+
+    const form = useForm<ReviewForm>({
         defaultValues: {
-            name: "",
             message: "",
             rating: 0,
         },
+        mode: "onTouched",
+        reValidateMode: "onChange",
         resolver: zodResolver(validateSchema)
     })
 
-    const onSubmit = (data: ReviewForm ) => {
-        console.log("Form submitted:", data);
-        // Here you can handle the form submission, e.g., send data to an API
+    const onSubmit = async (data: { message: string; rating: number }) => {
+        if (!isAuthenticated || !userId) {
+            setShowLoginPrompt(true);
+            return;
+        }
+        try {
+            const response = await axiosClient.post("/testimonial", {
+                message: data.message,
+                rating: data.rating,
+                userId: userId,
+            });
+            if (response.status === 201) {
+                setTestimonials((prev) => [response.data.data, ...prev]);
+                form.reset();
+                setTimeout(() => {
+                    carouselRef.current?.scrollTo({ left: 0, behavior: "smooth" });
+                }, 300);
+                alert("Review submitted successfully!");
+            } else {
+                alert("Failed to submit review. Please try again.");
+            }
+        } catch (error) {
+            console.log("Error submitting form:", error);
+            alert("Something went wrong. Please try again.");
+        }
     };
+
+    const handleLoginRedirect = () => {
+        router.push("/login");
+    };
+
     return (
         <div className="min-h-screen bg-white">
             {/* Hero Section */}
@@ -159,11 +225,9 @@ export default function MealPlansPage() {
                                         </DialogHeader>
 
                                         <div className="space-y-6 mt-6">
-
                                             <div className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">
                                                 {plan.price}
                                             </div>
-                                            <Separator className="bg-gradient-to-r from-yellow-200 to-orange-200" />
                                             <Separator className="bg-gradient-to-r from-yellow-200 to-orange-200" />
                                             <div className="flex gap-3 pt-4">
                                                 <Button className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
@@ -189,7 +253,27 @@ export default function MealPlansPage() {
                     <h1 className="text-3xl md:text-4xl font-bold text-center text-amber-800 mb-8">
                         Create Your Review
                     </h1>
-                    <Card className="bg-white/90 backdrop-blur-sm shadow-lg">
+
+                    {/* Show login prompt if not authenticated */}
+                    {!isAuthenticated && (
+                        <Card className="bg-yellow-50 border-yellow-200 mb-6">
+                            <CardContent className="pt-6">
+                                <div className="text-center">
+                                    <p className="text-amber-800 mb-4">
+                                        Please log in to submit a review
+                                    </p>
+                                    <Button
+                                        onClick={handleLoginRedirect}
+                                        className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600"
+                                    >
+                                        Login to Review
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    <Card className={`bg-white/90 backdrop-blur-sm shadow-lg ${!isAuthenticated ? 'opacity-50' : ''}`}>
                         <CardHeader>
                             <CardTitle className="text-xl font-bold text-amber-800">Share Your Experience</CardTitle>
                             <CardDescription className="text-amber-600">
@@ -201,25 +285,16 @@ export default function MealPlansPage() {
                                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                                     <FormField
                                         control={form.control}
-                                        name="name"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Name</FormLabel>
-                                                <FormControl>
-                                                    <Input placeholder="Your Name" {...field} />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                    <FormField
-                                        control={form.control}
                                         name="message"
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel>Message</FormLabel>
                                                 <FormControl>
-                                                    <Input placeholder="Your Review" {...field} />
+                                                    <Input
+                                                        placeholder="Your Review"
+                                                        {...field}
+                                                        disabled={!isAuthenticated}
+                                                    />
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
@@ -232,19 +307,105 @@ export default function MealPlansPage() {
                                             <FormItem>
                                                 <FormLabel>Rating</FormLabel>
                                                 <FormControl>
-                                                    <Input type="number" min="1" max="5" placeholder="Rate 1-5" {...field} />
+                                                    <div className="flex space-x-1">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <button
+                                                                key={star}
+                                                                type="button"
+                                                                onClick={() => isAuthenticated && field.onChange(star)}
+                                                                disabled={!isAuthenticated}
+                                                                className={`text-2xl transition-all ${field.value >= star ? "text-yellow-400" : "text-gray-300"
+                                                                    } ${!isAuthenticated ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                                            >
+                                                                ★
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
-                                    <Button type="submit">Submit</Button>
+
+                                    <Button
+                                        type="submit"
+                                        disabled={!isAuthenticated}
+                                        className={`${!isAuthenticated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    >
+                                        {isAuthenticated ? 'Submit Review' : 'Login Required'}
+                                    </Button>
                                 </form>
                             </Form>
                         </CardContent>
                     </Card>
+
+                    {/* Carousel section */}
+                    <motion.section
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <h2 className="text-2xl font-bold text-center text-amber-800 mt-16 mb-8">
+                            What Our Customers Say
+                        </h2>
+
+                        <div
+                            ref={carouselRef}
+                            className="flex overflow-x-auto space-x-4 pb-4 px-2 scroll-smooth "
+                        >
+                            {testimonials.length > 0 ? (
+                                <AnimatePresence>
+                                    {testimonials.map((item, idx) => (
+                                        <motion.div
+                                            key={item.message + idx}
+                                            className="min-w-[260px] bg-white/90 backdrop-blur-sm border border-amber-200 p-4 rounded-xl shadow-md"
+                                            initial={{ opacity: 0, scale: 0.9 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.9 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            <CardHeader className="pb-2">
+                                                <CardTitle className="text-lg text-amber-800">
+                                                    {item.name}
+                                                </CardTitle>
+                                                <CardDescription className="text-sm text-yellow-600">
+                                                    Rating: {item.rating}/5
+                                                </CardDescription>
+                                            </CardHeader>
+                                            <CardContent>
+                                                <p className="text-sm text-gray-700">{item.message}</p>
+                                            </CardContent>
+                                        </motion.div>
+                                    ))}
+
+                                </AnimatePresence>
+                            ) : (
+                                <div className="text-center text-gray-400 italic">No testimonials yet.</div>
+                            )}
+                        </div>
+                    </motion.section>
                 </motion.section>
             </div>
+
+            {/* Login Prompt Dialog */}
+            <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Login Required</DialogTitle>
+                        <DialogDescription>
+                            You need to be logged in to submit a review. Please log in to continue.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex gap-3 justify-end">
+                        <Button variant="outline" onClick={() => setShowLoginPrompt(false)}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handleLoginRedirect}>
+                            Go to Login
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

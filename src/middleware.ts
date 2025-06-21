@@ -13,7 +13,6 @@ export async function middleware(request: NextRequest) {
   if (!isProtectedRoute) {
     return NextResponse.next();
   }
-
   // Cek JWT custom dari cookie 'token'
   const token = request.cookies.get('token')?.value;
   if (token) {
@@ -21,18 +20,24 @@ export async function middleware(request: NextRequest) {
     if (decoded) {
       return NextResponse.next();
     }
+  } else {
+    console.log(token, 'Token tidak ditemukan atau tidak valid');
   }
 
   // Jika bukan JWT, cek NextAuth session token
   const nextAuthToken = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   if (nextAuthToken) {
     return NextResponse.next();
+  } else {
+    console.log(nextAuthToken, 'NextAuth token tidak ditemukan atau tidak valid');
   }
+  console.log("Middleware: token", token);
+  console.log("Middleware: nextAuthToken", nextAuthToken);
 
 
   return NextResponse.redirect(new URL('/login', request.url));
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/dashboard/admin/:path*'],
+  matcher: ['/dashboard/user/:path*', '/dashboard/admin/:path*'],
 };

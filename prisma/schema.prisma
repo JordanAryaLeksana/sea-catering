@@ -37,17 +37,19 @@ enum ContactType {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  password     String
-  Testimonials Testimonial[]
-  role         UserType      @default(USER)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  name           String
+  email          String        @unique
+  password       String?       
+  image          String?      
+  emailVerified  DateTime?    
+  Testimonials   Testimonial[]
+  role           UserType      @default(USER)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  accounts Account[]
-  sessions Session[]
+  accounts       Account[]
+  sessions       Session[]
 }
 
 model Contact {

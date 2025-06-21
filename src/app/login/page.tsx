@@ -1,45 +1,57 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// /app/login/page.tsx
+"use client";
+
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signIn, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
     Form,
     FormField,
     FormItem,
     FormLabel,
     FormControl,
-    FormMessage
+    FormMessage,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
-type FormData = {
-    email: string;
-    password: string;
-};
-
-
-const validateSchema = z.object({
-    email: z.string().email("Invalid email address").min(1, "Email is required"),
-    password: z.string().min(1, "Password is required"),
+const schema = z.object({
+    email: z.string().email(),
+    password: z.string().min(6),
 });
 
 export default function LoginPage() {
+    const router = useRouter();
     const form = useForm({
-        resolver: zodResolver(validateSchema),
-        defaultValues: {
-            email: "",
-            password: "",
-        },
+        resolver: zodResolver(schema),
+        mode: "onTouched",
+        reValidateMode: "onChange",
+        defaultValues: { email: "", password: "" },
     });
-    const onSubmit = (data: FormData) => {
-        console.log("Form submitted:", data);
-        // Handle login logic here
-    };    
+
+    const onSubmit = async (data: z.infer<typeof schema>) => {
+        await signOut({ redirect: false });
+        const res = await signIn("credentials", {
+            email: data.email,
+            password: data.password,
+            redirect: false,
+        });
+        console.log("Login response:", data);
+        if (res?.error) {
+            alert(res.error);
+        } else {
+            alert("Login successful!");
+            router.push("/dashboard/user");
+        }
+    };
+
     return (
-        <div className="flex w-full min-h-screen items-center justify-center bg-gray-100 p-4">
-            <h1>Login</h1>
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 w-full max-w-md bg-white p-6 rounded-xl shadow">
+                    <h1 className="text-2xl font-bold">Login</h1>
                     <FormField
                         control={form.control}
                         name="email"
@@ -47,7 +59,7 @@ export default function LoginPage() {
                             <FormItem>
                                 <FormLabel>Email</FormLabel>
                                 <FormControl>
-                                    <Input {...field} placeholder="Enter your email" />
+                                    <Input {...field} type="email" placeholder="you@example.com" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -60,15 +72,30 @@ export default function LoginPage() {
                             <FormItem>
                                 <FormLabel>Password</FormLabel>
                                 <FormControl>
-                                    <Input {...field} type="password" placeholder="Enter your password" />
+                                    <Input {...field} type="password" placeholder="••••••••" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}
                     />
-                    <Button type="submit">Submit</Button>
+                    <Button type="submit" className="w-full">Login</Button>
+                    <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={async () => {
+                            await signOut({ redirect: false });
+                            await signIn("google", {
+                                callbackUrl: "/dashboard/user",
+                                prompt: "consent select_account", // <- ini memaksa Google untuk tidak skip
+                            });
+                        }}
+                        type="button"
+                    >
+                        Sign in with Google
+                    </Button>
+
                 </form>
             </Form>
         </div>
-    )
+    );
 }

@@ -1,3 +1,4 @@
+"use client";
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,12 +15,13 @@ import {
 } from '@/components/ui/form';
 
 import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
 } from "@/components/ui/select";
+import axiosClient from '@/lib/axios';
 
 type FormData = {
     name: string;
@@ -47,22 +49,41 @@ const validateSchema = z.object({
 
 
 export default function SubscriptionPage() {
-     const form = useForm<FormData>({
-            defaultValues: {
-                name: "",
-                phone: "",
-                plansection: "diet",
-                mealtype: "breakfast",
-                delivery: new Date(),
-                allergies: ""
-            },
-            resolver: zodResolver(validateSchema)
-        })
-    
-        const onSubmit = (data: FormData ) => {
-            console.log("Form submitted:", data);
-            // Here you can handle the form submission, e.g., send data to an API
-        };
+    const form = useForm<FormData>({
+        defaultValues: {
+            name: "",
+            phone: "",
+            plansection: "diet",
+            mealtype: "breakfast",
+            delivery: new Date(),
+            allergies: ""
+        },
+        mode: "onTouched",
+        reValidateMode: "onChange",
+        resolver: zodResolver(validateSchema)
+        
+    })
+
+    const onSubmit = async (data: FormData) => {
+        console.log("Form submitted:", data);
+        try {
+            const response = await axiosClient.post('api/subscription', data);
+            console.log("Response from server:", response.data);
+            if (response.status === 201) {
+
+                alert("Subscription successful!");
+            } else {
+                alert("Subscription failed. Please try again.");
+            }
+        } catch (error) {
+            console.error("Error submitting form:", error);
+            if (error instanceof Error) {
+                alert(error.message);
+                return;
+            }
+            alert("An unexpected error occurred. Please try again later.");
+        }
+    };
     return (
         <div className="relative min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
             <motion.div>
