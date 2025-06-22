@@ -152,8 +152,6 @@ export default function SubscriptionPage() {
                     }}
                 />
             ))}
-            
-            {/* Gradient Orbs */}
             <div className="absolute top-0 left-0 w-72 h-72 bg-gradient-to-r from-yellow-200 to-green-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
             <div className="absolute top-0 right-0 w-72 h-72 bg-gradient-to-r from-green-200 to-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
             <div className="absolute bottom-0 left-1/2 w-72 h-72 bg-gradient-to-r from-pink-200 to-yellow-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000"></div>

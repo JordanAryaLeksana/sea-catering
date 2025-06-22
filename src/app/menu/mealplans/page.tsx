@@ -83,8 +83,6 @@ export default function MealPlansPage() {
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
-
-
     const { data: session, status } = useSession();
     const isAuthenticated = status === "authenticated";
     const userId = session?.user?.id;

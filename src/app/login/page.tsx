@@ -1,10 +1,9 @@
-// /app/login/page.tsx
 "use client";
 
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn, signOut } from "next-auth/react";
+import { getSession, signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
     Form,
@@ -16,13 +15,32 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
+import axiosClient from "@/lib/axios";
 
 const schema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
 });
 
+
+
 export default function LoginPage() {
+    useEffect(() => {
+        const initAdmin = async () => {
+            try {
+                const res = await axiosClient.get("/admin");
+                if (res.status === 201) {
+                    console.log("Admin initialized:", res.data?.message);
+                }
+            } catch (error) {
+                console.error("[INIT ADMIN ERROR]", error);
+            }
+        };
+
+        initAdmin();
+    }, []);
+
     const router = useRouter();
     const form = useForm({
         resolver: zodResolver(schema),
@@ -39,11 +57,23 @@ export default function LoginPage() {
             redirect: false,
         });
         console.log("Login response:", data);
-        if (res?.error) {
-            alert(res.error);
+        const session = await getSession();
+        if (session?.user?.role === "admin") {
+            if (res?.error) {
+                alert("Login failed: " + res.error);
+                return;
+            } else{
+                alert("Login successful");
+                router.push("/dashboard/admin");
+            }
         } else {
-            alert("Login successful!");
-            router.push("/dashboard/user");
+            if (res?.error) {
+                alert("Login failed: " + res.error);
+                return;
+            } else {
+                alert("Login successful");
+                router.push("/dashboard/user");
+            }
         }
     };
 
@@ -86,14 +116,13 @@ export default function LoginPage() {
                             await signOut({ redirect: false });
                             await signIn("google", {
                                 callbackUrl: "/dashboard/user",
-                                prompt: "consent select_account", // <- ini memaksa Google untuk tidak skip
+                                prompt: "consent select_account",
                             });
                         }}
                         type="button"
                     >
                         Sign in with Google
                     </Button>
-
                 </form>
             </Form>
         </div>

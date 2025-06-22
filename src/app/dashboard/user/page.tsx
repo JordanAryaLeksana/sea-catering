@@ -4,8 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function UserDashboardPage() {
     const session = await getServerSession(authOptions);
-    console.log("SESSION:", session); 
-
+    // console.log("SESSION:", session); 
     if (!session || session.user.role !== "user") {
         return redirect("/login");
     }

@@ -29,7 +29,10 @@ export async function GET(
     if (!userId) {
         return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
-
+    //block get user by id if not admin
+    if (session?.user.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const existingUser = await prisma.user.findUnique({
         where: { id: userId },
         select: {

@@ -6,29 +6,21 @@ import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
 
+
+const isDefaultAdmin = (email: string) => {
+    return email === process.env.ADMIN_EMAIL;
+};
+
 export async function GET() {
     const session = await getServerSession(authOptions);
-    const cookieStore = cookies();
-    const token = (await cookieStore).get('token')?.value;
-    let isAuthenticated = false;
-    if (session?.user) {
-        isAuthenticated = true;
-    }
-    if (token) {
-        try {
-            jwt.verify(token, process.env.JWT_SECRET as string);
-            isAuthenticated = true;
-        
-        } catch (err) {
-            console.error("JWT Invalid", err);
-        }
-    }
 
-    if (!isAuthenticated) {
+    if (!session || !session.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (session.user.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
+    }
 
-    // Ambil data user dari database
     try {
         const users = await prisma.user.findMany({
             select: {
@@ -38,7 +30,12 @@ export async function GET() {
                 role: true,
             },
         });
-
+        if (!users || users.length === 0) {
+            return NextResponse.json({ error: "No users found" }, { status: 404 });
+        }
+        if (users.some(user => user.email === process.env.ADMIN_EMAIL)) {
+            return NextResponse.json({ error: "Cannot fetch users with default admin account" }, { status: 403 });
+        }
         return NextResponse.json({ data: users, message: "Users Fetched" }, { status: 200 });
     } catch (error) {
         console.error("Error fetching users:", error);
@@ -59,7 +56,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
         try {
             jwt.verify(token, process.env.JWT_SECRET as string);
             isAuthenticated = true;
-        
+
         } catch (err) {
             console.error("JWT Invalid", err);
         }
@@ -71,6 +68,14 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
 
     // Hapus user berdasarkan ID yang diberikan
     const { id } = await request.json();
+    const existingUser = await prisma.user.findUnique({ where: { id } });
+
+    if (existingUser?.email === process.env.ADMIN_EMAIL) {
+        return NextResponse.json({ error: "Cannot delete default admin account" }, { status: 403 });
+    }
+    if (!id) {
+        return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
     try {
         const user = await prisma.user.delete({
             where: { id },
@@ -96,7 +101,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
         try {
             jwt.verify(token, process.env.JWT_SECRET as string);
             isAuthenticated = true;
-        
+
         } catch (err) {
             console.error("JWT Invalid", err);
         }
@@ -105,9 +110,14 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     if (!isAuthenticated) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Update user berdasarkan ID yang diberikan
     const { id, name, email, role } = await request.json();
+    const existingUser = await prisma.user.findUnique({ where: { id } });
+    if (!existingUser) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    if (existingUser?.email === process.env.ADMIN_EMAIL) {
+        return NextResponse.json({ error: "Cannot update default admin account" }, { status: 403 });
+    }
     try {
         const user = await prisma.user.update({
             where: { id },
@@ -133,7 +143,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         try {
             jwt.verify(token, process.env.JWT_SECRET as string);
             isAuthenticated = true;
-        
+
         } catch (err) {
             console.error("JWT Invalid", err);
         }
@@ -143,8 +153,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Tambah user baru
     const { name, email, password, role } = await request.json();
+    if (isDefaultAdmin(email) && role?.toLowerCase() === 'admin') {
+        return NextResponse.json({ error: "Cannot create default admin via this route" }, { status: 403 });
+    }
+
     try {
         const user = await prisma.user.create({
             data: { name, email, password, role },
@@ -169,7 +182,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
         try {
             jwt.verify(token, process.env.JWT_SECRET as string);
             isAuthenticated = true;
-        
+
         } catch (err) {
             console.error("JWT Invalid", err);
         }
@@ -181,6 +194,12 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
 
     // Update user password
     const { id, password } = await request.json();
+    const existingUser = await prisma.user.findUnique({ where: { id } });
+
+    if (existingUser?.email === process.env.ADMIN_EMAIL) {
+        return NextResponse.json({ error: "Cannot update password for default admin" }, { status: 403 });
+    }
+
     try {
         const hashedPassword = await bcrypt.hash(password, 12);
         const user = await prisma.user.update({

@@ -19,13 +19,12 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
       <div className="md:hidden fixed top-20 left-4 z-50">
         <button
           onClick={() => setSidebarOpen(true)}
-          className="bg-white p-2 rounded-md shadow-md"
+          className={`bg-white p-2 rounded-md shadow-md ${sidebarOpen ? "hidden" : "flex"} `}
         >
           <Menu size={24} />
         </button>
       </div>
 
-      {/* Sidebar - Fixed position, starts below navbar */}
       <div className={`fixed top-16 bottom-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } md:translate-x-0`}>
@@ -41,7 +40,6 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
           </button>
         </div>
 
-        {/* Sidebar menu - Scrollable if needed */}
         <nav className="mt-6 px-4 overflow-y-auto h-full pb-20">
           {menuItems.map((item, index) => (
             <Link
@@ -59,7 +57,7 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/60 bg-opacity-50 z-30 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}

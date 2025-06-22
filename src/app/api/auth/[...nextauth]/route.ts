@@ -1,4 +1,3 @@
-// /app/api/auth/[...nextauth]/route.ts
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -34,6 +33,15 @@ export const authOptions: NextAuthOptions = {
           throw new Error("User not found or no password set");
         }
 
+        // Blokir user biasa pakai email admin
+        const adminEmail = process.env.ADMIN_EMAIL;
+        if (
+          credentials.email === adminEmail &&
+          user.role.toLowerCase() !== "admin"
+        ) {
+          throw new Error("Only admin can use this email");
+        }
+
         const isValid = await bcrypt.compare(credentials.password, user.password);
         if (!isValid) {
           throw new Error("Invalid password");
@@ -45,9 +53,13 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      console.log("JWT callback", { token, user, account });
+      const adminEmail = process.env.ADMIN_EMAIL;
 
-      // Saat login pertama kali (baik dari Google atau Credentials)
+      // Prevent admin login via Google
+      if (account?.provider === "google" && user?.email === adminEmail) {
+        throw new Error("Admin must login using credentials only");
+      }
+
       if (account && user) {
         token.id = user.id;
         token.email = user.email;
@@ -59,8 +71,6 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      console.log("SESSION callback", { session });
-
       if (session.user) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
@@ -68,7 +78,6 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.image = token.picture as string | null;
       }
-
       return session;
     },
   },
