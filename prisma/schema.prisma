@@ -30,6 +30,12 @@ enum UserType {
   USER
 }
 
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  PAUSED
+}
+
 enum ContactType {
   GENERAL
   FEEDBACK
@@ -37,19 +43,19 @@ enum ContactType {
 }
 
 model User {
-  id             String        @id @default(cuid())
-  name           String
-  email          String        @unique
-  password       String?       
-  image          String?      
-  emailVerified  DateTime?    
-  Testimonials   Testimonial[]
-  role           UserType      @default(USER)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  name          String
+  email         String        @unique
+  password      String?
+  image         String?
+  emailVerified DateTime?
+  Testimonials  Testimonial[]
+  role          UserType      @default(USER)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  accounts       Account[]
-  sessions       Session[]
+  accounts Account[]
+  sessions Session[]
 }
 
 model Contact {
@@ -99,11 +105,15 @@ model Testimonial {
 }
 
 model Subscription {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
   PhoneNumber  String
   planType     PlanType
   mealType     MealType
   deliveryDays String[]
-  startDate    DateTime @default(now())
+  status       SubscriptionStatus @default(ACTIVE)
+  pausedFrom   DateTime? @default(now())
+  pausedUntil  DateTime?
+  price        Float?    @default(0)
+  startDate    DateTime  @default(now())
 }

@@ -25,9 +25,8 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
         </button>
       </div>
 
-      <div className={`fixed top-16 bottom-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } md:translate-x-0`}>
+      <div className={`fixed top-16 bottom-0 left-0 z-40 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } md:translate-x-0`}>
 
         {/* Sidebar header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
@@ -57,10 +56,11 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
       {/* Overlay for mobile */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/60 bg-opacity-50 z-30 md:hidden"
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm transition-opacity duration-300 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
+
 
 
       <main className="fixed top-16 bottom-0 right-0 left-0 md:left-64 overflow-y-auto bg-white">

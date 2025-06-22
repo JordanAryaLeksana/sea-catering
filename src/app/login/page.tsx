@@ -56,7 +56,7 @@ export default function LoginPage() {
             password: data.password,
             redirect: false,
         });
-        console.log("Login response:", data);
+        // console.log("Login response:", data);
         const session = await getSession();
         if (session?.user?.role === "admin") {
             if (res?.error) {

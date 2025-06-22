@@ -22,6 +22,7 @@ const subscriptionSchema = z.object({
     mealType: z.nativeEnum(MealType, {
         errorMap: () => ({ message: "Invalid meal type" }),
     }),
+    price: z.number().optional(),
     DeliveryDays: z.array(z.string().refine(date => !isNaN(Date.parse(date)), {
         message: "Invalid date format"  
     })).min(1, "At least one delivery day is required"
@@ -33,12 +34,13 @@ interface SubscriptionRequest {
     phoneNumber: string;
     planType: PlanType;
     mealType: MealType;
+    price?: number;
     DeliveryDays: string[];
 }
 export async function POST(request: NextRequest): Promise<NextResponse> {
     const body = await request.json();
     try {
-        const { name, phoneNumber, planType, mealType, DeliveryDays }: SubscriptionRequest = subscriptionSchema.parse(body);
+        const { name, phoneNumber, planType, mealType, price, DeliveryDays }: SubscriptionRequest = subscriptionSchema.parse(body);
 
 
         if (!Object.values(PlanType).includes(planType)) {
@@ -55,6 +57,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 PhoneNumber: phoneNumber,
                 planType,
                 mealType,
+                price: price || 0, 
                 deliveryDays: DeliveryDays.map(day => new Date(day).toISOString()),
             }
         });
