@@ -1,15 +1,22 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 export async function DELETE(
     request: NextRequest,
     { params }: { params: { id: string } }
 ): Promise<NextResponse> {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (session.user.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
+    }
     const subscriptionId = params.id;
     if (!subscriptionId) {
         return NextResponse.json({ error: "Subscription ID is required" }, { status: 400 });
     }
-
     try {
         const existing = await prisma.subscription.findUnique({ where: { id: subscriptionId } });
         if (!existing) {

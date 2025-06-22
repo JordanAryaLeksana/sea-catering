@@ -11,7 +11,6 @@ export async function PATCH(
   if (!session || !session.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
   const { id } = params;
   if (!id) {
     return NextResponse.json({ error: "Subscription ID is required" }, { status: 400 });

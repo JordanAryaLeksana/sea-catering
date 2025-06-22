@@ -11,11 +11,9 @@ export async function GET(
 ): Promise<NextResponse> {
     const session = await getServerSession(authOptions);
     const token = (await cookies()).get("token")?.value;
-
     if (!session?.user && !token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     if (token) {
         try {
             jwt.verify(token, process.env.JWT_SECRET as string);
