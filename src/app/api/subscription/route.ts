@@ -22,8 +22,10 @@ const subscriptionSchema = z.object({
     mealType: z.nativeEnum(MealType, {
         errorMap: () => ({ message: "Invalid meal type" }),
     }),
-    DeliveryDays: z.array(z.string()).min(1, "At least one delivery day is required"),
-
+    DeliveryDays: z.array(z.string().refine(date => !isNaN(Date.parse(date)), {
+        message: "Invalid date format"  
+    })).min(1, "At least one delivery day is required"
+    )
 });
 
 interface SubscriptionRequest {
@@ -53,9 +55,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 PhoneNumber: phoneNumber,
                 planType,
                 mealType,
-                deliveryDays: {
-                    set: DeliveryDays,
-                },
+                deliveryDays: DeliveryDays.map(day => new Date(day).toISOString()),
             }
         });
         const exists = await prisma.subscription.findFirst({
