@@ -8,8 +8,8 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
 
   const menuItems = [
     { icon: Home, label: 'Dashboard', href: '#' },
-    { icon: Users, label: 'Subscriptions', href: '/comingsoon' },
-    { icon: Calendar, label: 'Delivery Schedule', href: '/comingsoon' },
+    { icon: Users, label: 'Subscriptions', href: '/dashboard/admin/deliverySchedule' },
+    { icon: Calendar, label: 'Delivery Schedule', href: '/dashboard/admin/subscription' },
   ]
 
   return (

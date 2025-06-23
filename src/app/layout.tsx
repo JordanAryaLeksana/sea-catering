@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   description: "Healthy Meals, Anytime, Anywhere",
 };
 
+
+
 export default function RootLayout({
   children,
 }: Readonly<{
