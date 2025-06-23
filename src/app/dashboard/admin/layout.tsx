@@ -1,6 +1,6 @@
 'use client'
 import React, { useState } from 'react'
-import { Menu, X, Home, Users, Calendar, Settings } from 'lucide-react'
+import { Menu, X, Home, Users, Calendar } from 'lucide-react'
 import Link from 'next/link'
 
 export default function DashboardLayout({ children }: { children?: React.ReactNode }) {
@@ -10,7 +10,6 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
     { icon: Home, label: 'Dashboard', href: '#' },
     { icon: Users, label: 'Subscriptions', href: '#' },
     { icon: Calendar, label: 'Delivery Schedule', href: '#' },
-    { icon: Settings, label: 'Settings', href: '#' }
   ]
 
   return (
