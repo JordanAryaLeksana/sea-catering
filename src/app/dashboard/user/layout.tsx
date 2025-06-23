@@ -10,7 +10,7 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
     { icon: Home, label: 'Dashboard', href: '#' },
     { icon: Users, label: 'Subscriptions', href: '#' },
     { icon: Calendar, label: 'Delivery Schedule', href: '#' },
-    { icon: Settings, label: 'Settings', href: '#' }
+    { icon: Settings, label: 'Settings', href: '/dashboard/user/profile' }
   ]
 
   return (

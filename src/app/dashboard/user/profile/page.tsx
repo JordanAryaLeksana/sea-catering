@@ -22,8 +22,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
-
+import { useParams } from "next/navigation";
 type UserProfile = {
+    id?: string; // Optional, in case the profile is not fetched yet
     name: string;
     email: string;
     password: string;
@@ -44,7 +45,8 @@ export default function UserProfilePage() {
     const { data: session, status } = useSession();
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+    // const params = useParams();
+    // const userId = params.id; 
     const form = useForm<UserProfile>({
         defaultValues: {
             name: userProfile?.name || "",
@@ -55,14 +57,34 @@ export default function UserProfilePage() {
         mode: "onTouched",
         reValidateMode: "onChange",
     });
-    
+    // console.log("Session data:", session);
     const id = session?.user?.id;
-
+  
     useEffect(() => {
-        if (id) {
-            fetchUserProfile();
-        }
-    }, [id]);
+        const fetchUserProfile = async () => {
+            try {
+                const response = await axiosClient.get(`/users/${id}`);
+                const profile = response.data?.data;
+
+                if (profile) {
+                    setUserProfile(profile);
+                    form.reset({
+                        name: profile.name,
+                        email: profile.email,
+                        password: "",
+                    });
+                }
+            } catch (error: unknown) {
+                if (axios.isAxiosError(error)) {
+                    alert(error.response?.data?.error || "Failed to fetch profile");
+                    console.error("Fetch error:", error.response?.data || error.message);
+                }
+            }
+        };
+
+        if (id) fetchUserProfile();
+    }, [id, form]);
+
 
     if (status === "loading") {
         return (
@@ -76,7 +98,7 @@ export default function UserProfilePage() {
                     <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"
+                        className="w-8 h-8 border-4 border-yellow-500 border-t-transparent rounded-full mx-auto mb-4"
                     />
                     <p className="text-gray-600 font-medium">Loading session...</p>
                 </motion.div>
@@ -84,37 +106,25 @@ export default function UserProfilePage() {
         );
     }
 
-    const fetchUserProfile = async () => {
-        try {
-            const response = await axiosClient.get(`/user/${id}`);
-            setUserProfile(response.data);
-            form.reset({
-                name: response.data.name,
-                email: response.data.email,
-                password: "",
-            });
-            return response.data;
-        } catch (error: unknown) {
-            if (axios.isAxiosError(error)) {
-                alert(error.response?.data?.error || "An error occurred while fetching user profile");
-                console.error("Error fetching user profile:", error.response?.data || error.message);
-            }
-        }
-    };
+
 
     const onSubmit = async (data: UserProfile) => {
         setIsSubmitting(true);
         try {
-            const response = await axiosClient.patch("/user/profile", data);
+            const response = await axiosClient.patch("/users", {
+                ...data,
+                id: session?.user?.id, 
+            });
+
             setUserProfile(response.data);
             alert("Profile updated successfully");
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 alert(error.response?.data?.error || "An error occurred while updating profile");
-                console.error("Error updating profile:", error.response?.data || error.message);
+                // console.error("Error updating profile:", error.response?.data || error.message);
             } else {
                 alert("An unexpected error occurred");
-                console.error("Unknown error:", error);
+                console.error("Unknown error:", error)
             }
         } finally {
             setIsSubmitting(false);
@@ -160,7 +170,7 @@ export default function UserProfilePage() {
                 <motion.div
                     variants={floatingVariants}
                     animate="animate"
-                    className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full opacity-30"
+                    className="absolute top-20 left-10 w-20 h-20 bg-gradient-to-r from-yellow-100 to-green-100 rounded-full opacity-30"
                 />
                 <motion.div
                     variants={floatingVariants}
@@ -172,7 +182,7 @@ export default function UserProfilePage() {
                     variants={floatingVariants}
                     animate="animate"
                     transition={{ delay: 2 }}
-                    className="absolute bottom-32 left-1/4 w-12 h-12 bg-gradient-to-r from-green-100 to-blue-100 rounded-full opacity-30"
+                    className="absolute bottom-32 left-1/4 w-12 h-12 bg-gradient-to-r from-green-100 to-yellow-100 rounded-full opacity-30"
                 />
                 <motion.div
                     variants={floatingVariants}
@@ -195,19 +205,19 @@ export default function UserProfilePage() {
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-                                className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-4"
+                                className="mx-auto w-16 h-16 bg-gradient-to-r from-yellow-500 to-green-600 rounded-full flex items-center justify-center mb-4"
                             >
                                 <User className="w-8 h-8 text-white" />
                             </motion.div>
-                            
+
                             <CardTitle className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                                 User Profile
                             </CardTitle>
-                            
+
                             <CardDescription className="text-gray-600 mt-2">
                                 Manage your personal information
                             </CardDescription>
-                            
+
                             <div className="flex items-center justify-center gap-2 mt-3">
                                 <Badge variant="secondary" className="text-xs">
                                     <Sparkles className="w-3 h-3 mr-1" />
@@ -224,8 +234,8 @@ export default function UserProfilePage() {
 
                         <CardContent className="space-y-6">
                             <Form {...form}>
-                                <motion.form 
-                                    onSubmit={form.handleSubmit(onSubmit)} 
+                                <motion.form
+                                    onSubmit={form.handleSubmit(onSubmit)}
                                     className="space-y-5"
                                     variants={containerVariants}
                                 >
@@ -237,7 +247,7 @@ export default function UserProfilePage() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                                        <User className="w-4 h-4 text-blue-500" />
+                                                        <User className="w-4 h-4 text-yellow-500" />
                                                         Full Name
                                                     </FormLabel>
                                                     <FormControl>
@@ -245,10 +255,10 @@ export default function UserProfilePage() {
                                                             whileFocus={{ scale: 1.02 }}
                                                             transition={{ type: "spring", stiffness: 300 }}
                                                         >
-                                                            <Input 
-                                                                {...field} 
+                                                            <Input
+                                                                {...field}
                                                                 placeholder="Enter your full name"
-                                                                className="h-12 border-2 border-gray-200 focus:border-blue-500 transition-colors duration-200 bg-gray-50 focus:bg-white"
+                                                                className="h-12 border-2 border-gray-200 focus:border-yellow-500 transition-colors duration-200 bg-gray-50 focus:bg-white"
                                                             />
                                                         </motion.div>
                                                     </FormControl>
@@ -274,9 +284,9 @@ export default function UserProfilePage() {
                                                             whileFocus={{ scale: 1.02 }}
                                                             transition={{ type: "spring", stiffness: 300 }}
                                                         >
-                                                            <Input 
-                                                                {...field} 
-                                                                placeholder="Enter your email address" 
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Enter your email address"
                                                                 type="email"
                                                                 className="h-12 border-2 border-gray-200 focus:border-green-500 transition-colors duration-200 bg-gray-50 focus:bg-white"
                                                             />
@@ -296,7 +306,7 @@ export default function UserProfilePage() {
                                             render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                                        <Lock className="w-4 h-4 text-purple-500" />
+                                                        <Lock className="w-4 h-4 text-green-500" />
                                                         Password
                                                     </FormLabel>
                                                     <FormControl>
@@ -304,11 +314,11 @@ export default function UserProfilePage() {
                                                             whileFocus={{ scale: 1.02 }}
                                                             transition={{ type: "spring", stiffness: 300 }}
                                                         >
-                                                            <Input 
-                                                                {...field} 
-                                                                placeholder="Enter your password" 
+                                                            <Input
+                                                                {...field}
+                                                                placeholder="Enter your password"
                                                                 type="password"
-                                                                className="h-12 border-2 border-gray-200 focus:border-purple-500 transition-colors duration-200 bg-gray-50 focus:bg-white"
+                                                                className="h-12 border-2 border-gray-200 focus:border-green-500 transition-colors duration-200 bg-gray-50 focus:bg-white"
                                                             />
                                                         </motion.div>
                                                     </FormControl>
@@ -324,9 +334,9 @@ export default function UserProfilePage() {
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                     >
-                                        <Button 
-                                            type="submit" 
-                                            className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                                        <Button
+                                            type="submit"
+                                            className="w-full h-12 bg-gradient-to-r from-yellow-600 to-green-600 hover:from-yellow-700 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
                                             disabled={isSubmitting}
                                         >
                                             {isSubmitting ? (

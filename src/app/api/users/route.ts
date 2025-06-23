@@ -78,7 +78,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
     try {
         const user = await prisma.user.delete({
-            where: { id },
+            where: { id: session?.user.id  },
         });
 
         return NextResponse.json({ data: user, message: "User Deleted" }, { status: 200 });
@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
     try {
         const user = await prisma.user.update({
-            where: { id },
+            where: { id: session?.user.id  },
             data: { name, email, role },
         });
 
@@ -193,7 +193,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     }
 
     // Update user password
-    const { id, password } = await request.json();
+    const { id, password, name, email } = await request.json();
     const existingUser = await prisma.user.findUnique({ where: { id } });
 
     if (existingUser?.email === process.env.ADMIN_EMAIL) {
@@ -203,8 +203,12 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     try {
         const hashedPassword = await bcrypt.hash(password, 12);
         const user = await prisma.user.update({
-            where: { id },
-            data: { password: hashedPassword },
+            where: { id: session?.user.id  },
+            data: {
+                name,
+                email,
+                password: hashedPassword
+            },
         });
 
         return NextResponse.json({ data: user, message: "User Password Updated" }, { status: 200 });

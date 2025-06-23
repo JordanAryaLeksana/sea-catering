@@ -7,13 +7,17 @@ import { cookies } from "next/headers";
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: { id?: string } }
 ): Promise<NextResponse> {
+    const userId = context.params.id;
     const session = await getServerSession(authOptions);
     const token = (await cookies()).get("token")?.value;
+
     if (!session?.user && !token) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    // Verify token (optional if you trust session more)
     if (token) {
         try {
             jwt.verify(token, process.env.JWT_SECRET as string);
@@ -23,14 +27,15 @@ export async function GET(
         }
     }
 
-    const userId = params.id;
     if (!userId) {
         return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
-    //block get user by id if not admin
-    if (session?.user.role !== "admin") {
+
+    // 🔒 Only admin OR the owner of the profile can access
+    if (session?.user.role !== "admin" && session?.user.id !== userId) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
     const existingUser = await prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -44,13 +49,15 @@ export async function GET(
     if (!existingUser) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
     return NextResponse.json({ data: existingUser }, { status: 200 });
 }
 
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: { id: string } }
 ): Promise<NextResponse> {
+    const userId = context.params.id; 
     const session = await getServerSession(authOptions);
     const token = (await cookies()).get("token")?.value;
 
@@ -66,8 +73,11 @@ export async function DELETE(
             return NextResponse.json({ error: "Invalid Token" }, { status: 401 });
         }
     }
+    if (session?.user.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
-    const userId = params.id;
+   
     if (!userId) {
         return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
