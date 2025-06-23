@@ -199,8 +199,9 @@ export default function SubscriptionPage() {
                 ...payload,
                 userId: userId
             });
-            console.log("Subscription response:", response.data);
             alert("Subscription success");
+            return response.data;
+            // console.log("Subscription response:", response.data);
         } catch (err: unknown) {
             if (isAxiosError(err)) {
                 alert(err.response?.data?.error || "Subscription failed");

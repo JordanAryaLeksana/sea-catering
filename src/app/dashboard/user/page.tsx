@@ -12,6 +12,6 @@ export default async function UserDashboardPage() {
   if (!session.user.id) {
     redirect("/login");
   }
-  console.log("User Dashboard Page - User ID:", session.user.id);
+//   console.log("User Dashboard Page - User ID:", session.user.id);
   return <UserDashboardClient userId={session.user.id} />;
 }

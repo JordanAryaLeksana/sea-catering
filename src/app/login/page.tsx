@@ -31,7 +31,7 @@ export default function LoginPage() {
             try {
                 const res = await axiosClient.get("/admin");
                 if (res.status === 201) {
-                    console.log("Admin initialized:", res.data?.message);
+                    // console.log("Admin initialized:", res.data?.message);
                 }
             } catch (error) {
                 console.error("[INIT ADMIN ERROR]", error);

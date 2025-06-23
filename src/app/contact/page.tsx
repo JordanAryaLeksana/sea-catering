@@ -100,12 +100,12 @@ export default function ContactPage() {
     })
 
     const onSubmit = async (data: FormData) => {
-        console.log("Form submitted:", data);
+        // console.log("Form submitted:", data);
         try{
             const response = await axiosClient.post('/contact', data);
-            console.log("Response from server:", response.data);
+            // console.log("Response from server:", response.data);
             if (response.status === 201) {
-                console.log("Form submitted successfully:", response.data);
+                // console.log("Form submitted successfully:", response.data);
                 alert("Success! Your message has been sent.");
                 router.push("/contact/success");
                 form.reset();

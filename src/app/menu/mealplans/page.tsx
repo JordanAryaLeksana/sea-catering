@@ -79,7 +79,7 @@ const validateSchema = z.object({
 
 export default function MealPlansPage() {
     const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-    console.log("Initial testimonials state:", testimonials);
+    // console.log("Initial testimonials state:", testimonials);
     const [showLoginPrompt, setShowLoginPrompt] = useState(false);
     const carouselRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
@@ -102,8 +102,8 @@ export default function MealPlansPage() {
 
                 setTestimonials(response.data.data);
             } catch (error) {
-                console.log("Error fetching testimonials:", error);
-                alert("Failed to load testimonials. Please try again later.");
+                // console.log("Error fetching testimonials:", error);
+                alert("Failed to load testimonials. Please try again later.", error);
             }
         };
         fetchTestimonials();
@@ -141,8 +141,8 @@ export default function MealPlansPage() {
                 alert("Failed to submit review. Please try again.");
             }
         } catch (error) {
-            console.log("Error submitting form:", error);
-            alert("Something went wrong. Please try again.");
+            // console.log("Error submitting form:", error);
+            alert("Something went wrong. Please try again.", error);
         }
     };
 

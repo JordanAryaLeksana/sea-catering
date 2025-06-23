@@ -86,7 +86,7 @@ export default function UserDashboardClient({ userId }: { userId: string }) {
             try {
                 const response = await axiosClient.get(`/users/${userId}`);
                 setUserData(response.data.data);
-                console.log("User data fetched successfully:", response.data);
+                // console.log("User data fetched successfully:", response.data);
             } catch (error: unknown) {
                 if (isAxiosError(error)) {
                     console.error("Error fetching user data:", error.response?.data);
@@ -98,7 +98,7 @@ export default function UserDashboardClient({ userId }: { userId: string }) {
             try {
                 const res = await axiosClient.get(`/subscription/user/${userId}`);
                 setSubscription(res.data.data);
-                console.log("Subscription data:", res.data);
+                // console.log("Subscription data:", res.data);
             } catch (error: unknown) {
                 if (isAxiosError(error)) {
                     console.error("Error fetching subscription:", error.response?.data);
@@ -131,7 +131,7 @@ export default function UserDashboardClient({ userId }: { userId: string }) {
             const response = await axiosClient.patch(`/subscription/${subscription.id}/cancel`);
             setSubscription(response.data.data);
             alert("Subscription canceled successfully");
-            console.log("Subscription canceled:", response.data);
+            // console.log("Subscription canceled:", response.data);
         } catch (error: unknown) {
             if (isAxiosError(error)) {
                 alert(error.response?.data?.error || "An error occurred while canceling subscription");
@@ -186,7 +186,7 @@ export default function UserDashboardClient({ userId }: { userId: string }) {
             });
             setSubscription(response.data.data);
             alert(`Subscription paused from ${todayString} until ${pauseUntilInput}!`);
-            console.log("Subscription paused:", response.data);
+            // console.log("Subscription paused:", response.data);
         } catch (error: unknown) {
             if (isAxiosError(error)) {
                 alert(error.response?.data?.error || "An error occurred while pausing subscription");
@@ -207,7 +207,7 @@ export default function UserDashboardClient({ userId }: { userId: string }) {
             const response = await axiosClient.patch(`/subscription/${subscription.id}/resume`);
             setSubscription(response.data.data);
             alert("Subscription resumed!");
-            console.log("Subscription resumed:", response.data);
+            // console.log("Subscription resumed:", response.data);
         } catch (error: unknown) {
             if (isAxiosError(error)) {
                 alert(error.response?.data?.error || "An error occurred while resuming subscription");
