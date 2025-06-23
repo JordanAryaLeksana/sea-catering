@@ -15,8 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
-import axiosClient from "@/lib/axios";
 
 const schema = z.object({
     email: z.string().email(),
@@ -26,20 +24,6 @@ const schema = z.object({
 
 
 export default function LoginPage() {
-    useEffect(() => {
-        const initAdmin = async () => {
-            try {
-                const res = await axiosClient.get("/admin");
-                if (res.status === 201) {
-                    // console.log("Admin initialized:", res.data?.message);
-                }
-            } catch (error) {
-                console.error("[INIT ADMIN ERROR]", error);
-            }
-        };
-
-        initAdmin();
-    }, []);
 
     const router = useRouter();
     const form = useForm({
