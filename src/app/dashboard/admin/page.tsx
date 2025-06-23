@@ -79,9 +79,13 @@ export default function AdminDashboard() {
         const fetchSubscriptions = async () => {
             try {
                 const response = await axiosClient.get("/subscription");
-                console.log("Fetched subscriptions:", response.data.data);
+                // console.log("Fetched subscriptions:", response.data.data);
                 setSubscriptions(response.data.data);
-            } catch (error) {
+            } catch (error: unknown) {
+                if(axios.isAxiosError(error)) {
+                    // console.error("Axios error:", error.response?.data || error.message);
+                    alert(error.response?.data.error || "Unknown error");
+                }
                 console.error("Error fetching subscriptions:", error);
             }
         };
@@ -90,7 +94,10 @@ export default function AdminDashboard() {
                 const response = await axiosClient.get("/users");
                 setUser(response.data.data);
             } catch (error) {
-                console.error("Error fetching user:", error);
+                if (axios.isAxiosError(error)) {
+                    alert(error.response?.data.error || "Unknown error");
+                }
+                // console.error("Error fetching user:", error);
             }
         };
         fetchSubscriptions();
@@ -120,10 +127,11 @@ export default function AdminDashboard() {
             const params = new URLSearchParams(dateRange as Record<string, string>);
             const response = await axiosClient.get("/admin/subsData", { params });
             setData(response.data);
-            console.log("Fetched data:", response.data);
+            // console.log("Fetched data:", response.data);
         } catch (error: unknown) {
             if (axios.isAxiosError(error))
-                console.error("Axios error:", error.response?.data || error.message);
+                alert(error.response?.data.error || "Unknown error");
+                // console.error("Axios error:", error.response?.data || error.message);
         } finally {
             setLoading(false);
         }
