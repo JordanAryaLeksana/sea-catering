@@ -1,4 +1,4 @@
-import NextAuth, { type NextAuthOptions } from "next-auth";
+import { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -92,7 +92,4 @@ export const authOptions: NextAuthOptions = {
         strategy: "jwt",
     },
 };
-
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
 
