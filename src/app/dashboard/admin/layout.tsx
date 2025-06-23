@@ -7,7 +7,7 @@ export default function DashboardLayout({ children }: { children?: React.ReactNo
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const menuItems = [
-    { icon: Home, label: 'Dashboard', href: '#' },
+    { icon: Home, label: 'Dashboard', href: '/dashboard/admin/' },
     { icon: Users, label: 'Subscriptions', href: '/dashboard/admin/deliverySchedule' },
     { icon: Calendar, label: 'Delivery Schedule', href: '/dashboard/admin/subscription' },
   ]

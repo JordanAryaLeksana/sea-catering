@@ -125,7 +125,7 @@ export default function AdminDashboard() {
         setLoading(true);
         try {
             const params = new URLSearchParams(dateRange as Record<string, string>);
-            const response = await axiosClient.get("/admin/subsData", { params });
+            const response = await axiosClient.get("/adminData/subsData", { params });
             setData(response.data);
             // console.log("Fetched data:", response.data);
         } catch (error: unknown) {
