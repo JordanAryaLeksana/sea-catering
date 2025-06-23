@@ -54,5 +54,6 @@
     "tsx": "^4.20.3",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5"
-  }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"]
 }

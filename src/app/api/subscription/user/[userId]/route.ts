@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 
+type Params = Promise<{ userId: string }>;
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Params }
 ): Promise<NextResponse> {
-  const { userId } = params;
-
+  const { userId } = await params;
   try {
     const subscription = await prisma.subscription.findFirst({
       where: { userId },

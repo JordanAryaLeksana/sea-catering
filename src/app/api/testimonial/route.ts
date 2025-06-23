@@ -75,7 +75,11 @@ export async function GET(): Promise<NextResponse> {
       return NextResponse.json({ error: "No testimonials found" }, { status: 404 });
     }
 
-    const formatted = testimonials.map((t) => ({
+    const formatted = testimonials.map((t: {
+      User: { name: string; email: string };
+      message: string;
+      rating: number;
+    }) => ({
       name: t.User.name,
       email: t.User.email,
       message: t.message,

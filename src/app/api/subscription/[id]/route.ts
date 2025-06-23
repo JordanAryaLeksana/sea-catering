@@ -1,10 +1,12 @@
 import prisma from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
+
+type Params = Promise<{ id: string }>;
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Params }
 ): Promise<NextResponse> {
     const session = await getServerSession(authOptions);
     if (!session || !session.user) {
@@ -13,7 +15,7 @@ export async function DELETE(
     if (session.user.role !== "admin") {
         return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
-    const subscriptionId = params.id;
+    const subscriptionId = (await params).id
     if (!subscriptionId) {
         return NextResponse.json({ error: "Subscription ID is required" }, { status: 400 });
     }
@@ -33,11 +35,13 @@ export async function DELETE(
     }
 }
 
+
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Params }
 ): Promise<NextResponse> {
-    const subscriptionId =  params.id;
+    const { id } = await params;
+    const subscriptionId = id;
     if (!subscriptionId) {
         return NextResponse.json({ error: "Subscription ID is required" }, { status: 400 });
     }
@@ -62,11 +66,12 @@ export async function GET(
     }
 }
 
+
 export async function PUT(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Params }
 ): Promise<NextResponse> {
-    const subscriptionId = params.id;
+    const subscriptionId = (await params).id;
     if (!subscriptionId) {
         return NextResponse.json({ error: "Subscription ID is required" }, { status: 400 });
     }

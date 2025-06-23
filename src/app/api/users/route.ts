@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { authOptions } from '@/lib/auth';
 import { cookies } from 'next/headers';
-import jwt from 'jsonwebtoken';
 import * as bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+
+type User ={
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+}
 
 const isDefaultAdmin = (email: string) => {
     return email === process.env.ADMIN_EMAIL;
@@ -58,7 +65,7 @@ export async function GET() {
         if (!users || users.length === 0) {
             return NextResponse.json({ error: "No users found" }, { status: 404 });
         }
-        if (users.some(user => user.email === process.env.ADMIN_EMAIL)) {
+        if (users.some((user: User) => user.email === process.env.ADMIN_EMAIL)) {
             return NextResponse.json({ error: "Cannot fetch users with default admin account" }, { status: 403 });
         }
         return NextResponse.json({ data: users, message: "Users Fetched" }, { status: 200 });
