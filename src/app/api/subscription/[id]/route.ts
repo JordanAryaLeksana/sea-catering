@@ -37,7 +37,7 @@ export async function GET(
     request: NextRequest,
     { params }: { params: { id: string } }
 ): Promise<NextResponse> {
-    const subscriptionId = params.id;
+    const subscriptionId =  params.id;
     if (!subscriptionId) {
         return NextResponse.json({ error: "Subscription ID is required" }, { status: 400 });
     }

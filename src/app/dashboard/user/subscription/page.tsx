@@ -1,11 +1,18 @@
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { UserSubscriptionDashboardClient } from "@/components/pages/UserSubcriptionDashboardClient";
 
 
-
-export default function SubscriptionPage() {
-    return (
-        <div>
-            <h1>Subscription Page</h1>
-            <p>This page will handle user subscriptions.</p>
-        </div>
-    );
+export default async function SubscriptionPage() {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "user") {
+        redirect("/login");
+    }
+    //   console.log("User Dashboard Page - Session:", session);
+    if (!session.user.id) {
+        redirect("/login");
+    }
+    console.log("User Dashboard Page - User ID:", session.user.id);
+    return <UserSubscriptionDashboardClient userId={session.user.id} />;
 }

@@ -23,8 +23,9 @@ const subscriptionSchema = z.object({
         errorMap: () => ({ message: "Invalid meal type" }),
     }),
     price: z.number().optional(),
+    userId: z.string().min(1, "User ID is required"),
     DeliveryDays: z.array(z.string().refine(date => !isNaN(Date.parse(date)), {
-        message: "Invalid date format"  
+        message: "Invalid date format"
     })).min(1, "At least one delivery day is required"
     )
 });
@@ -35,20 +36,26 @@ interface SubscriptionRequest {
     planType: PlanType;
     mealType: MealType;
     price?: number;
+    userId?: string;
     DeliveryDays: string[];
 }
 export async function POST(request: NextRequest): Promise<NextResponse> {
-    const body = await request.json();
     try {
-        const { name, phoneNumber, planType, mealType, price, DeliveryDays }: SubscriptionRequest = subscriptionSchema.parse(body);
-
-
-        if (!Object.values(PlanType).includes(planType)) {
-            return NextResponse.json({ error: "Invalid plan type" }, { status: 400 });
+        const body = await request.json();
+        const { name, phoneNumber, planType, mealType, price, DeliveryDays, userId }: SubscriptionRequest = subscriptionSchema.parse(body);
+        if (!userId) {
+            return NextResponse.json({ error: "User ID is required" }, { status: 400 });
         }
+        const exists = await prisma.subscription.findFirst({
+            where: {
+                PhoneNumber: phoneNumber,
+                planType,
+                mealType,
+            }
+        });
 
-        if (!Object.values(MealType).includes(mealType)) {
-            return NextResponse.json({ error: "Invalid meal type" }, { status: 400 });
+        if (exists) {
+            return NextResponse.json({ error: "You have already subscribed to this plan." }, { status: 409 });
         }
 
         const subscription = await prisma.subscription.create({
@@ -57,21 +64,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
                 PhoneNumber: phoneNumber,
                 planType,
                 mealType,
-                price: price || 0, 
+                price: price || 0,
                 deliveryDays: DeliveryDays.map(day => new Date(day).toISOString()),
+                User: {
+                    connect: { id: userId },
+                },
             }
         });
-        const exists = await prisma.subscription.findFirst({
-            where: {
-                PhoneNumber: phoneNumber,
-                planType,
-                mealType,
-            }
-        });
-        if (exists) {
-            return NextResponse.json({ error: "You have already subscribed to this plan." }, { status: 409 });
-        }
+
         return NextResponse.json({ data: subscription, message: "Subscription created successfully" }, { status: 201 });
+
     } catch (error) {
         if (error instanceof ZodError) {
             return NextResponse.json({ error: error.errors }, { status: 400 });
@@ -80,6 +82,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }
+
 
 
 export async function GET(): Promise<NextResponse> {
