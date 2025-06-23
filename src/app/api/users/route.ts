@@ -17,12 +17,37 @@ export async function GET() {
     if (!session || !session.user) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    if (session.user.role == "admin") {
+        const cookieStore = cookies();
+        const token = (await cookieStore).get('token')?.value;
+        let isAuthenticated = false;
+        if (session?.user) {
+            isAuthenticated = true;
+        }
+        if (token) {
+            try {
+                jwt.verify(token, process.env.JWT_SECRET as string);
+                isAuthenticated = true;
+
+            } catch (err) {
+                console.error("JWT Invalid", err);
+            }
+        }
+
+        if (!isAuthenticated) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+    }
     if (session.user.role !== "admin") {
         return NextResponse.json({ error: "Forbidden: Admins only" }, { status: 403 });
     }
 
     try {
         const users = await prisma.user.findMany({
+            where: {
+                role: "USER"
+            },
             select: {
                 id: true,
                 name: true,
@@ -78,7 +103,7 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
     }
     try {
         const user = await prisma.user.delete({
-            where: { id: session?.user.id  },
+            where: { id: session?.user.id },
         });
 
         return NextResponse.json({ data: user, message: "User Deleted" }, { status: 200 });
@@ -120,7 +145,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
     }
     try {
         const user = await prisma.user.update({
-            where: { id: session?.user.id  },
+            where: { id: session?.user.id },
             data: { name, email, role },
         });
 
@@ -203,7 +228,7 @@ export async function PATCH(request: NextRequest): Promise<NextResponse> {
     try {
         const hashedPassword = await bcrypt.hash(password, 12);
         const user = await prisma.user.update({
-            where: { id: session?.user.id  },
+            where: { id: session?.user.id },
             data: {
                 name,
                 email,

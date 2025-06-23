@@ -28,21 +28,22 @@ const links = [
   { name: "Contact Us", path: "/contact" },
 ];
 
-const authLinks = [
-  { name: "Login", path: "/login", icon: LogIn },
-  { name: "Register", path: "/register", icon: UserPlus },
-  { name: "Dashboard", path: "/dashboard/user", icon: LayoutDashboard },
-];
 
 export default function Navbar() {
+
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileDropdownOpen, setIsMobileDropdownOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
   const isActive = (path: string) => pathname === path;
   const { data: session, status } = useSession();
-
+  const isAdmin = status === "authenticated" && session?.user?.role?.toLowerCase() === "admin";
+  const authLinks = [
+    { name: "Login", path: "/login", icon: LogIn },
+    { name: "Register", path: "/register", icon: UserPlus },
+    { name: "Dashboard", path: isAdmin ? "/dashboard/admin" : "/dashboard/user", icon: LayoutDashboard },
+  ];
   const handleNavigation = (path: string) => {
     router.push(path);
     setIsMobileMenuOpen(false);
@@ -53,7 +54,10 @@ export default function Navbar() {
     setIsMobileMenuOpen(!isMobileMenuOpen);
     setIsMobileDropdownOpen(false);
   };
-
+  // console.log("Session:", session);
+  // console.log("Status:", status);
+  // console.log("Role dari session:", session?.user?.role);
+  // console.log(isAdmin)
 
   return (
     <nav className="fixed top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
@@ -145,7 +149,7 @@ export default function Navbar() {
                     👋 {session.user?.name || session.user?.email}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => handleNavigation("/dashboard/user")}>
+                  <DropdownMenuItem onClick={() => handleNavigation(isAdmin ? "dashboard/admin" : "/dashboard/user")}>
                     <LayoutDashboard className="h-4 w-4 mr-2" />
                     Dashboard
                   </DropdownMenuItem>
@@ -266,7 +270,7 @@ export default function Navbar() {
                     <Button
                       variant="ghost"
                       className="w-full justify-start text-left h-12 text-base font-medium flex items-center gap-3 text-gray-700 hover:text-yellow-600 hover:bg-yellow-50"
-                      onClick={() => handleNavigation("/dashboard/user")}
+                      onClick={() => handleNavigation(isAdmin ? "dashboard/admin" : "/dashboard/user")}
                     >
                       <LayoutDashboard className="h-5 w-5" />
                       Dashboard

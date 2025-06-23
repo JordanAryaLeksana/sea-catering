@@ -8,8 +8,7 @@ export default async function UserDashboardPage() {
     if (!session || session.user.role !== "user") {
         return redirect("/login");
     }
-    
-
+    // const userId = session.user.id;
     return (
         <div>
             <h1>User Dashboard</h1>

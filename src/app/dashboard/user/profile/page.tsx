@@ -22,7 +22,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useSession } from "next-auth/react";
-import { useParams } from "next/navigation";
+
 type UserProfile = {
     id?: string; // Optional, in case the profile is not fetched yet
     name: string;
