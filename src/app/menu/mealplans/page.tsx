@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+
+
 import {
     Form,
     FormField,
@@ -24,6 +26,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axiosClient from "@/lib/axios";
+import { isAxiosError } from "axios";
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useSession } from "next-auth/react"; // Import useSession
@@ -103,7 +106,7 @@ export default function MealPlansPage() {
                 setTestimonials(response.data.data);
             } catch (error) {
                 // console.log("Error fetching testimonials:", error);
-                alert("Failed to load testimonials. Please try again later.", error);
+                alert("Failed to load testimonials. Please try again later." + error);
             }
         };
         fetchTestimonials();
@@ -140,9 +143,17 @@ export default function MealPlansPage() {
             } else {
                 alert("Failed to submit review. Please try again.");
             }
-        } catch (error) {
+        } catch (error: unknown) {
             // console.log("Error submitting form:", error);
-            alert("Something went wrong. Please try again.", error);
+            if (isAxiosError(error)) {
+                if (error.response?.status === 401) {
+                    setShowLoginPrompt(true);
+                } else {
+                    alert(error.response?.data?.error || "An error occurred while submitting your review.");
+                }
+            } else {
+                // console.error("Unexpected error:", error);
+            }
         }
     };
 
