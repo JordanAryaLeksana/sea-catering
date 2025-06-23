@@ -2,8 +2,11 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function createDefaultAdmin() {
-  const adminEmail = process.env.ADMIN_EMAIL!;
-  const adminPassword = process.env.ADMIN_PASSWORD!;
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminEmail || !adminPassword) {
+    throw new Error("Missing admin credentials in environment variables");
+  }
   const adminName = process.env.ADMIN_NAME || "Admin";
 
   const existingAdmin = await prisma.user.findUnique({
