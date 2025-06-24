@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "Sea Catering",
   description: "Healthy Meals, Anytime, Anywhere",
   icons: {
-    icon: "/image.png",
+    icon: "/favicon.png",
   }
 };
 
@@ -24,6 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <link rel="icon" href="/public/favicon.svg" />
       <body
         className={`${outfit.variable} ${dmSans.variable} antialiased`}
       >
