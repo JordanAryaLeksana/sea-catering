@@ -492,7 +492,7 @@ export default function SubscriptionPage() {
                                                 className="w-full bg-gradient-to-r from-yellow-500 to-green-500 hover:from-yellow-600 hover:to-green-600 text-white font-semibold py-3 h-auto shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
                                             >
                                                 <AnimatePresence mode="wait">
-                                                    {isSubmitting ? (
+                                                    {!isSubmitting ? (
                                                         <motion.div
                                                             key="loading"
                                                             initial={{ opacity: 0 }}

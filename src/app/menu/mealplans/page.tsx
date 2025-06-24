@@ -105,8 +105,8 @@ export default function MealPlansPage() {
 
                 setTestimonials(response.data.data);
             } catch (error) {
-                // console.log("Error fetching testimonials:", error);
-                alert("Failed to load testimonials. Please try again later." + error);
+                console.log("Error fetching testimonials:", error);
+                // alert("Failed to load testimonials. Please try again later." + error);
             }
         };
         fetchTestimonials();
