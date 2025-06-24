@@ -99,7 +99,7 @@ export default function RegisterPage() {
         }
     };
     return (
-        <div className="flex w-full min-h-screen items-center justify-center bg-white p-4 relative overflow-hidden">
+        <div className="flex w-full mt-24 min-h-screen items-center justify-center bg-white p-4 relative overflow-hidden">
             {/* Background Particles */}
             <div className="absolute z-0 inset-0">
                 <ParticlesBackground />

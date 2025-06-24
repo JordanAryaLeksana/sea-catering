@@ -97,7 +97,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white px-4 relative overflow-hidden">
+        <div className="min-h-screen mt-24 flex items-center justify-center bg-white px-4 relative overflow-hidden">
             <div className="absolute z-0 inset-0">
                 <ParticlesBackground />
             </div>

@@ -10,6 +10,9 @@ const dmSans = DM_Sans({ subsets: ['latin'], variable: '--font-dm' })
 export const metadata: Metadata = {
   title: "Sea Catering",
   description: "Healthy Meals, Anytime, Anywhere",
+  icons: {
+    icon: "/image.png",
+  }
 };
 
 
