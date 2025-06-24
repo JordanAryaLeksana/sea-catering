@@ -21,8 +21,10 @@ export async function middleware(request: NextRequest) {
 
   const isComingSoon = process.env.NEXT_PUBLIC_COMING_SOON === "true";
   if (isComingSoon && comingSoonRoutes.includes(pathname)) {
-    return NextResponse.rewrite(new URL("/comingSoon", request.url));
+    return NextResponse.rewrite(new URL("/coming-soon", request.url));
   }
+  console.log("🔧 Middleware invoked for path:", pathname)
+  console.log(process.env.NEXT_PUBLIC_COMING_SOON, isComingSoon)
   if (!isProtected) {
     return NextResponse.next();
   }

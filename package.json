@@ -10,7 +10,6 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint"
-    
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -38,7 +37,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.58.0",
+    "react-particles": "^2.12.2",
     "tailwind-merge": "^3.3.1",
+    "tsparticles-slim": "^2.12.0",
     "zod": "^3.25.64"
   },
   "devDependencies": {

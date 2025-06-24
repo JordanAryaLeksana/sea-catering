@@ -29,7 +29,7 @@ import axiosClient from "@/lib/axios";
 import { isAxiosError } from "axios";
 import { useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useSession } from "next-auth/react"; // Import useSession
+import { useSession } from "next-auth/react"; 
 import { useRouter } from "next/navigation";
 
 type ReviewForm = {
@@ -239,14 +239,15 @@ export default function MealPlansPage() {
                                             </div>
                                             <Separator className="bg-gradient-to-r from-yellow-200 to-orange-200" />
                                             <div className="flex gap-3 pt-4">
-                                                <Button className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
+                                                <Button onClick={() => router.push('/subscription')} className="flex-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-medium shadow-lg hover:shadow-xl transition-all duration-300">
                                                     Subscribe Now
                                                 </Button>
                                                 <Button
+                                                onClick={() => router.push('/contact')}
                                                     variant="outline"
                                                     className="flex-1 border-amber-300 text-amber-700 hover:bg-yellow-50 hover:border-amber-400"
                                                 >
-                                                    Learn More
+                                                    Contact Us
                                                 </Button>
                                             </div>
                                         </div>
